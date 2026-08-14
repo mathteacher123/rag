@@ -20,13 +20,13 @@
 ## Hybrid Structural Chunking Sprint
 
 ### LlamaIndex/RAG Pipeline Tasks
-- [ ] Refactor `app/services/rag/chunking.py`: Phase A (MarkdownNodeParser header split) + Phase B (sentence-aware split with `.`, `?`, `\n\n` boundaries, backward scan, chunk_size=2048 chars, overlap=300 chars)
-- [ ] Update `app/services/rag/__init__.py` exports for new `chunk_text` signature
+- [x] Refactor `app/services/rag/chunking.py`: Phase A (MarkdownNodeParser header split) + Phase B (sentence-aware split with `.`, `?`, `\n\n` boundaries, backward scan, chunk_size=2048 chars, overlap=300 chars)
+- [x] Update `app/services/rag/__init__.py` exports for new `chunk_text` signature
 
 ### Pytest Tasks
-- [ ] Update `tests/rag/conftest.py` with markdown fixtures (headers, nested sections, long paragraphs, mixed punctuation)
-- [ ] Rewrite `tests/rag/test_pipeline.py` tests: Phase A header splitting, Phase B sentence-aware splitting, overlap at sentence boundaries
+- [x] Update `tests/rag/conftest.py` with markdown fixtures (headers, nested sections, long paragraphs, mixed punctuation)
+- [x] Rewrite `tests/rag/test_pipeline.py` tests: Phase A header splitting, Phase B sentence-aware splitting, overlap at sentence boundaries
 
 ### Quality Assurance
-- [ ] Run `ruff check . && ruff format .`
-- [ ] Run `pytest`
+- [x] Run `ruff check . && ruff format .`
+- [x] Run `pytest`
