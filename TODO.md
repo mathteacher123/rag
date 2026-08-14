@@ -30,3 +30,21 @@
 ### Quality Assurance
 - [x] Run `ruff check . && ruff format .`
 - [x] Run `pytest`
+
+## Test Chunking Endpoint Sprint
+
+### Backend/FastAPI Tasks
+- [ ] Create `app/main.py` with FastAPI app instance and include API router
+- [ ] Create `app/api/__init__.py` package init
+- [ ] Create `app/api/v1/__init__.py` package init
+- [ ] Create `app/api/v1/endpoints/test.py` with POST /test/chunking endpoint (takes URL, calls fetch_and_convert_to_markdown + chunk_text, returns JSON)
+- [ ] Create `app/api/v1/router.py` to include test endpoint
+- [ ] Create `app/api/router.py` to include v1 router
+
+### Pytest Tasks
+- [ ] Create `tests/api/conftest.py` with FastAPI TestClient fixture
+- [ ] Create `tests/api/test_test_endpoint.py` with unit tests (mocked scraping/chunking)
+
+### Quality Assurance
+- [ ] Run `ruff check . && ruff format .`
+- [ ] Run `pytest`
