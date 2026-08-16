@@ -27,7 +27,12 @@ def chunk_html(html, chunk_size=600, chunk_overlap=75):
     # ---------------------------------------------------------
     parser = HTMLNodeParser(
         tags=[
-            "h1", "h2", "h3", "h4", "h5", "h6",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
             "p",
             "li",
             "table",
@@ -55,11 +60,10 @@ def chunk_html(html, chunk_size=600, chunk_overlap=75):
         # Heading
         # -------------------------
         if tag in ["h1", "h2", "h3", "h4", "h5", "h6"]:
-
             level = int(tag[1])
 
             # Keep only headings above the current level
-            heading_path = heading_path[:level - 1]
+            heading_path = heading_path[: level - 1]
 
             heading_path.append(text)
 
@@ -83,11 +87,13 @@ def chunk_html(html, chunk_size=600, chunk_overlap=75):
         else:
             content_type = "prose"
 
-        prepared_nodes.append({
-            "node": node,
-            "heading_path": list(heading_path),
-            "content_type": content_type,
-        })
+        prepared_nodes.append(
+            {
+                "node": node,
+                "heading_path": list(heading_path),
+                "content_type": content_type,
+            }
+        )
 
     # ---------------------------------------------------------
     # 4. Split content
@@ -100,7 +106,6 @@ def chunk_html(html, chunk_size=600, chunk_overlap=75):
     final_chunks = []
 
     for item in prepared_nodes:
-
         node = item["node"]
         content_type = item["content_type"]
 
@@ -108,28 +113,24 @@ def chunk_html(html, chunk_size=600, chunk_overlap=75):
         # Structural content stays together
         # ---------------------------------------------
         if content_type in ["table", "blockquote"]:
-
             chunks = [node]
 
         # ---------------------------------------------
         # Lists: keep consecutive list items together
         # ---------------------------------------------
         elif content_type == "list":
-
             chunks = [node]
 
         # ---------------------------------------------
         # Prose: sentence-aware chunking
         # ---------------------------------------------
         else:
-
             chunks = splitter.get_nodes_from_documents([node])
 
         # ---------------------------------------------
         # Preserve our metadata
         # ---------------------------------------------
         for chunk in chunks:
-
             chunk.metadata = {
                 "title": title,
                 "heading_path": " > ".join(item["heading_path"]),
