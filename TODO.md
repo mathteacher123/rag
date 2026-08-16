@@ -48,3 +48,34 @@
 ### Quality Assurance
 - [x] Run `ruff check . && ruff format .`
 - [x] Run `pytest`
+
+## HTML Chunking Sprint
+
+### How `chunk_html` works (from `_llm/html-chunk.py`)
+5-step pipeline:
+1. Title extraction — parses `<title>` tag via BeautifulSoup
+2. Structural parsing — `HTMLNodeParser` splits DOM into nodes by tag (`h1-h6`, `p`, `li`, `table`, `blockquote`). Consecutive `<li>` elements bundle into one node.
+3. Heading hierarchy — walks nodes, maintains breadcrumb path. Headings become metadata only, not chunks.
+4. Content-aware splitting — tables, blockquotes, lists stay unsplit. Prose split via `SentenceSplitter` (`chunk_size=600`, `chunk_overlap=75`).
+5. Metadata enrichment — every chunk gets `title`, `heading_path`, `content_type`, `chunk_index`.
+Returns `list[Document]`.
+
+### Dependencies
+- [ ] Add `"beautifulsoup4"` to `pyproject.toml` dependencies
+
+### LlamaIndex/RAG Pipeline Tasks
+- [ ] Replace `app/services/rag/chunking.py`: delete `chunk_text` and all Markdown logic, move `chunk_html` from `_llm/html-chunk.py` with imports (`BeautifulSoup`, `Document`, `HTMLNodeParser`, `SentenceSplitter`)
+- [ ] Update `app/services/rag/__init__.py`: export `chunk_html` instead of `chunk_text`
+- [ ] Update `app/services/rag/scraping.py`: remove `markdownify` import, rename `fetch_and_convert_to_markdown` to `fetch_html`, return raw HTML directly from `trafilatura.extract()`
+
+### Backend/FastAPI Tasks
+- [ ] Update `app/api/v1/endpoints/test.py`: replace `ChunkResponse` model with `{content, title, heading_path, content_type, chunk_index}`, call `chunk_html(raw_html)`, map `Document` objects to response
+
+### Pytest Tasks
+- [ ] Rewrite `tests/rag/conftest.py`: replace markdown fixtures with HTML fixtures (headings, tables, lists, blockquotes)
+- [ ] Rewrite `tests/rag/test_pipeline.py`: delete Markdown test classes, add HTML chunking tests (`test_returns_list_of_documents`, `test_heading_metadata`, `test_content_type_detection`, `test_chunk_index_sequential`, `test_empty_html_returns_empty`, `test_title_extracted`, `test_long_prose_is_split`, `test_table_stays_intact`, `test_list_stays_intact`)
+- [ ] Rewrite `tests/api/test_test_endpoint.py`: update `SAMPLE_CHUNKS` to new shape, mock `chunk_html` instead of `chunk_text`, assert new response fields
+
+### Quality Assurance
+- [ ] Run `ruff check . && ruff format .`
+- [ ] Run `pytest`
