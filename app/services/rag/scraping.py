@@ -1,15 +1,14 @@
 import trafilatura
-from markdownify import markdownify as md
 
 
-def fetch_and_convert_to_markdown(url: str) -> str:
-    """Fetch content from a URL and convert it to markdown.
+def fetch_html(url: str) -> str:
+    """Fetch content from a URL and return raw HTML.
 
     Args:
         url: The URL to fetch and convert.
 
     Returns:
-        The converted markdown content.
+        The raw HTML content, or empty string on failure.
     """
     downloaded = trafilatura.fetch_url(url)
     if downloaded is None:
@@ -19,4 +18,4 @@ def fetch_and_convert_to_markdown(url: str) -> str:
     )
     if html_content is None:
         return ""
-    return md(html_content)
+    return html_content
