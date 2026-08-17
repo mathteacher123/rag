@@ -61,21 +61,21 @@
 Returns `list[Document]`.
 
 ### Dependencies
-- [ ] Add `"beautifulsoup4"` to `pyproject.toml` dependencies
+- [x] Add `"beautifulsoup4"` to `pyproject.toml` dependencies
 
 ### LlamaIndex/RAG Pipeline Tasks
-- [ ] Replace `app/services/rag/chunking.py`: delete `chunk_text` and all Markdown logic, move `chunk_html` from `_llm/html-chunk.py` with imports (`BeautifulSoup`, `Document`, `HTMLNodeParser`, `SentenceSplitter`)
-- [ ] Update `app/services/rag/__init__.py`: export `chunk_html` instead of `chunk_text`
-- [ ] Update `app/services/rag/scraping.py`: remove `markdownify` import, rename `fetch_and_convert_to_markdown` to `fetch_html`, return raw HTML directly from `trafilatura.extract()`
+- [x] Replace `app/services/rag/chunking.py`: delete `chunk_text` and all Markdown logic, move `chunk_html` from `_llm/html-chunk.py` with imports (`BeautifulSoup`, `Document`, `HTMLNodeParser`, `SentenceSplitter`)
+- [x] Update `app/services/rag/__init__.py`: export `chunk_html` instead of `chunk_text`
+- [x] Update `app/services/rag/scraping.py`: remove `markdownify` import, rename `fetch_and_convert_to_markdown` to `fetch_html`, return raw HTML directly from `trafilatura.extract()`
 
 ### Backend/FastAPI Tasks
-- [ ] Update `app/api/v1/endpoints/test.py`: replace `ChunkResponse` model with `{content, title, heading_path, content_type, chunk_index}`, call `chunk_html(raw_html)`, map `Document` objects to response
+- [x] Update `app/api/v1/endpoints/test.py`: replace `ChunkResponse` model with `{content, title, heading_path, content_type, chunk_index}`, call `chunk_html(raw_html)`, map `Document` objects to response
 
 ### Pytest Tasks
-- [ ] Rewrite `tests/rag/conftest.py`: replace markdown fixtures with HTML fixtures (headings, tables, lists, blockquotes)
-- [ ] Rewrite `tests/rag/test_pipeline.py`: delete Markdown test classes, add HTML chunking tests (`test_returns_list_of_documents`, `test_heading_metadata`, `test_content_type_detection`, `test_chunk_index_sequential`, `test_empty_html_returns_empty`, `test_title_extracted`, `test_long_prose_is_split`, `test_table_stays_intact`, `test_list_stays_intact`)
-- [ ] Rewrite `tests/api/test_test_endpoint.py`: update `SAMPLE_CHUNKS` to new shape, mock `chunk_html` instead of `chunk_text`, assert new response fields
+- [x] Rewrite `tests/rag/conftest.py`: replace markdown fixtures with HTML fixtures (headings, tables, lists, blockquotes)
+- [x] Rewrite `tests/rag/test_pipeline.py`: delete Markdown test classes, add HTML chunking tests (`test_returns_list_of_documents`, `test_heading_metadata`, `test_content_type_detection`, `test_chunk_index_sequential`, `test_empty_html_returns_empty`, `test_title_extracted`, `test_long_prose_is_split`, `test_table_stays_intact`, `test_list_stays_intact`)
+- [x] Rewrite `tests/api/test_test_endpoint.py`: update `SAMPLE_CHUNKS` to new shape, mock `chunk_html` instead of `chunk_text`, assert new response fields
 
 ### Quality Assurance
-- [ ] Run `ruff check . && ruff format .`
-- [ ] Run `pytest`
+- [x] Run `ruff check . && ruff format .`
+- [x] Run `pytest`
