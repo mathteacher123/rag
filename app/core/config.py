@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     SUPABASE_DB_URL: str
+    SUPABASE_DB_URL_ASYNC: str
     GEMINI_API_KEY: str
     EMBEDDING_MODEL: str = "gemini-embedding-001"
     EMBEDDING_DIM: int = 768
