@@ -79,3 +79,32 @@ Returns `list[Document]`.
 ### Quality Assurance
 - [x] Run `ruff check . && ruff format .`
 - [x] Run `pytest`
+
+## Supabase Embedding Storage Sprint
+
+### Dependencies
+- [ ] Add `llama-index-vector-stores-postgres`, `llama-index-embeddings-google-genai`, `python-dotenv`, `psycopg2-binary` to `pyproject.toml` dependencies
+
+### Configuration Layer
+- [ ] Create `app/core/__init__.py` (empty package init)
+- [ ] Create `app/core/config.py`: Pydantic Settings with `SUPABASE_DB_URL`, `GEMINI_API_KEY`, model defaults
+- [ ] Create `.env.example`: template with required env vars (placeholder values)
+
+### LlamaIndex/RAG Pipeline Tasks
+- [ ] Create `app/services/rag/embedding.py`: initialize `GoogleGenAIEmbedding(model_name="gemini-embedding-001")` from settings, export singleton
+- [ ] Create `app/services/rag/url_utils.py`: `normalize_url(url)` — force https, lowercase domain, strip trailing slash, strip query string + fragment
+- [ ] Create `app/services/rag/vector_store.py`: `PGVectorStore.from_params()` with `embed_dim=768`, no `hnsw_kwargs`, export singleton
+- [ ] Create `app/services/rag/ingestion.py`: `ingest_url(url)` — normalize url, fetch_html, chunk_html, attach url metadata to each chunk, delete old by ref_doc_id, insert new via vector_store
+- [ ] Update `app/services/rag/__init__.py`: export `embed_model`, `vector_store`, `ingest_url`, `normalize_url`
+
+### Pytest Tasks
+- [ ] Create `tests/core/__init__.py` (empty package init)
+- [ ] Create `tests/core/conftest.py`: mock settings fixture
+- [ ] Create `tests/core/test_config.py`: test settings load from env, defaults, validation
+- [ ] Create `tests/rag/test_url_utils.py`: test normalize_url strips query string, fragment, trailing slash, lowercases domain
+- [ ] Create `tests/rag/test_ingestion.py`: mock fetch_html, chunk_html, vector_store; test full pipeline; test upsert deletes old before insert
+- [ ] Create `tests/rag/test_vector_store.py`: mock PGVectorStore; test upsert_by_url deletes then adds; test normalize_url integrated
+
+### Quality Assurance
+- [ ] Run `ruff check . && ruff format .`
+- [ ] Run `pytest`
