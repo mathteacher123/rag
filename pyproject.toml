@@ -10,7 +10,7 @@ dependencies = [
     "supabase",
     "pydantic-settings",
     "trafilatura",
-    "markdownify",
+    "beautifulsoup4",
     "requests",
 ]
 
@@ -23,6 +23,7 @@ dev = [
 [tool.ruff]
 line-length = 88
 target-version = "py311"
+exclude = ["_llm"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "UP"]
