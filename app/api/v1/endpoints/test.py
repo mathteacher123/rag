@@ -21,11 +21,11 @@ class ChunkResponse(BaseModel):
 @router.post("/test/chunking", response_model=list[ChunkResponse])
 def test_chunking(request: ChunkRequest) -> list[ChunkResponse]:
     """Fetch a URL, chunk the HTML, and return chunks with metadata."""
-    raw_html = fetch_html(request.url)
+    title, raw_html = fetch_html(request.url)
     if not raw_html:
         raise HTTPException(status_code=400, detail="Failed to fetch content from URL")
 
-    chunks = chunk_html(raw_html)
+    chunks = chunk_html(raw_html, title=title)
     return [
         ChunkResponse(
             content=chunk.text,

@@ -12,7 +12,7 @@ class TestScraping:
         mock_trafilatura.fetch_url.return_value = sample_html_for_scraping
         mock_trafilatura.extract.return_value = sample_html_for_scraping
 
-        result = fetch_html("https://example.com")
+        title, result = fetch_html("https://example.com")
 
         assert isinstance(result, str)
         assert len(result) > 0
@@ -22,7 +22,7 @@ class TestScraping:
     def test_fetch_html_returns_empty_on_none(self, mock_trafilatura):
         mock_trafilatura.fetch_url.return_value = None
 
-        result = fetch_html("https://invalid.url")
+        title, result = fetch_html("https://invalid.url")
 
         assert result == ""
 
@@ -45,7 +45,7 @@ class TestChunkHtmlBasic:
 
 class TestChunkHtmlMetadata:
     def test_title_extracted(self, sample_html):
-        chunks = chunk_html(sample_html)
+        chunks = chunk_html(sample_html, title="Test Page")
 
         assert chunks[0].metadata["title"] == "Test Page"
 

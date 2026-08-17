@@ -1,21 +1,27 @@
 import trafilatura
+from bs4 import BeautifulSoup
 
 
-def fetch_html(url: str) -> str:
-    """Fetch content from a URL and return raw HTML.
+def fetch_html(url: str) -> tuple[str | None, str]:
+    """Fetch content from a URL and return (title, raw HTML).
 
     Args:
-        url: The URL to fetch and convert.
+        url: The URL to fetch.
 
     Returns:
-        The raw HTML content, or empty string on failure.
+        Tuple of (title, body HTML). title is None if not found.
     """
     downloaded = trafilatura.fetch_url(url)
     if downloaded is None:
-        return ""
+        return None, ""
+
+    soup = BeautifulSoup(downloaded, "html.parser")
+    title_tag = soup.find("title")
+    title = title_tag.get_text(" ", strip=True) if title_tag else None
+
     html_content = trafilatura.extract(
         downloaded, include_links=True, include_images=True, output_format="html"
     )
     if html_content is None:
-        return ""
-    return html_content
+        return title, ""
+    return title, html_content

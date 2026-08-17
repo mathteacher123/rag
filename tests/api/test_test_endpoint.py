@@ -25,7 +25,10 @@ SAMPLE_CHUNKS = [
 
 
 class TestChunkingEndpoint:
-    @patch("app.api.v1.endpoints.test.fetch_html", return_value=SAMPLE_HTML)
+    @patch(
+        "app.api.v1.endpoints.test.fetch_html",
+        return_value=("Test Page", SAMPLE_HTML),
+    )
     @patch("app.api.v1.endpoints.test.chunk_html", return_value=SAMPLE_CHUNKS)
     def test_returns_chunks(self, mock_chunk, mock_fetch, client):
         response = client.post("/test/chunking", json={"url": "https://example.com"})
@@ -39,7 +42,7 @@ class TestChunkingEndpoint:
         assert data[0]["chunk_index"] == 0
         assert data[1]["heading_path"] == "Introduction > Background"
 
-    @patch("app.api.v1.endpoints.test.fetch_html", return_value="")
+    @patch("app.api.v1.endpoints.test.fetch_html", return_value=(None, ""))
     def test_returns_400_on_empty_content(self, mock_fetch, client):
         response = client.post("/test/chunking", json={"url": "https://invalid.url"})
 

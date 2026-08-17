@@ -10,11 +10,11 @@ from app.services.rag.vector_store import vector_store
 def ingest_url(url: str) -> dict:
     norm_url = normalize_url(url)
 
-    raw_html = fetch_html(norm_url)
+    title, raw_html = fetch_html(norm_url)
     if not raw_html:
         return {"url": norm_url, "chunk_count": 0, "status": "failed_to_fetch"}
 
-    chunks = chunk_html(raw_html)
+    chunks = chunk_html(raw_html, title=title)
 
     nodes = []
     for chunk in chunks:

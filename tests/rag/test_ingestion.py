@@ -8,7 +8,7 @@ from app.services.rag.ingestion import ingest_url
 @patch("app.services.rag.ingestion.chunk_html")
 @patch("app.services.rag.ingestion.fetch_html")
 def test_ingest_returns_chunk_count(mock_fetch, mock_chunk, mock_vs, mock_embed):
-    mock_fetch.return_value = "<html><p>Hello</p></html>"
+    mock_fetch.return_value = ("Test Title", "<html><p>Hello</p></html>")
     metadata = {
         "title": "T",
         "heading_path": "",
@@ -30,7 +30,7 @@ def test_ingest_returns_chunk_count(mock_fetch, mock_chunk, mock_vs, mock_embed)
 @patch("app.services.rag.ingestion.chunk_html")
 @patch("app.services.rag.ingestion.fetch_html")
 def test_ingest_deletes_old_before_insert(mock_fetch, mock_chunk, mock_vs, mock_embed):
-    mock_fetch.return_value = "<html><p>Hello</p></html>"
+    mock_fetch.return_value = ("Test Title", "<html><p>Hello</p></html>")
     metadata = {
         "title": "T",
         "heading_path": "",
@@ -49,7 +49,7 @@ def test_ingest_deletes_old_before_insert(mock_fetch, mock_chunk, mock_vs, mock_
 
 @patch("app.services.rag.ingestion.fetch_html")
 def test_ingest_returns_failed_on_empty_html(mock_fetch):
-    mock_fetch.return_value = ""
+    mock_fetch.return_value = (None, "")
     result = ingest_url("https://example.com/missing")
     assert result["status"] == "failed_to_fetch"
     assert result["chunk_count"] == 0

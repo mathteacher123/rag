@@ -1,9 +1,8 @@
-from bs4 import BeautifulSoup
 from llama_index.core import Document
 from llama_index.core.node_parser import HTMLNodeParser, SentenceSplitter
 
 
-def chunk_html(html, chunk_size=600, chunk_overlap=75):
+def chunk_html(html, title=None, chunk_size=600, chunk_overlap=75):
     """
     Chunk HTML for RAG using a structure-aware LlamaIndex pipeline.
 
@@ -13,14 +12,6 @@ def chunk_html(html, chunk_size=600, chunk_overlap=75):
         content_type
         chunk_index
     """
-
-    soup = BeautifulSoup(html, "html.parser")
-
-    # ---------------------------------------------------------
-    # 1. Document title
-    # ---------------------------------------------------------
-    title_tag = soup.find("title")
-    title = title_tag.get_text(" ", strip=True) if title_tag else None
 
     # ---------------------------------------------------------
     # 2. Extract HTML into structural units
