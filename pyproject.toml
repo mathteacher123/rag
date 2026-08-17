@@ -10,7 +10,7 @@ dependencies = [
     "supabase",
     "pydantic-settings",
     "trafilatura",
-    "beautifulsoup4",
+    "markdownify",
     "requests",
 ]
 
