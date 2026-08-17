@@ -1,132 +1,148 @@
-import re
-
+from bs4 import BeautifulSoup
 from llama_index.core import Document
-from llama_index.core.node_parser import MarkdownNodeParser
-
-SENTENCE_DELIMITERS = re.compile(r"(?<=[.?])\s+|\n\n")
+from llama_index.core.node_parser import HTMLNodeParser, SentenceSplitter
 
 
-def _split_sentences(text: str) -> list[str]:
-    """Split text into sentences on `.`, `?`, or `\n\n` boundaries."""
-    if not text:
-        return []
-    parts = SENTENCE_DELIMITERS.split(text)
-    return [p for p in parts if p.strip()]
+def chunk_html(html, chunk_size=600, chunk_overlap=75):
+    """
+    Chunk HTML for RAG using a structure-aware LlamaIndex pipeline.
 
+    Metadata preserved on every chunk:
+        title
+        heading_path
+        content_type
+        chunk_index
+    """
 
-def _find_boundary_backward(text: str, max_chars: int) -> int:
-    """Scan backward from max_chars to find the nearest sentence boundary."""
-    if max_chars >= len(text):
-        return len(text)
+    soup = BeautifulSoup(html, "html.parser")
 
-    search_region = text[:max_chars]
+    # ---------------------------------------------------------
+    # 1. Document title
+    # ---------------------------------------------------------
+    title_tag = soup.find("title")
+    title = title_tag.get_text(" ", strip=True) if title_tag else None
 
-    last_period = search_region.rfind(". ")
-    last_question = search_region.rfind("? ")
-    last_newline = search_region.rfind("\n\n")
-
-    boundaries = [b for b in [last_period, last_question, last_newline] if b >= 0]
-
-    if not boundaries:
-        return max_chars
-
-    return max(boundaries) + 2
-
-
-def _refine_long_section(
-    section_text: str,
-    header: str,
-    chunk_size: int,
-    overlap: int,
-) -> list[dict]:
-    """Phase B: Sentence-aware split for sections exceeding chunk_size."""
-    if len(section_text) <= chunk_size:
-        return [
-            {
-                "content": section_text,
-                "header": header,
-                "start_char": 0,
-                "end_char": len(section_text),
-            }
+    # ---------------------------------------------------------
+    # 2. Extract HTML into structural units
+    # ---------------------------------------------------------
+    parser = HTMLNodeParser(
+        tags=[
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "p",
+            "li",
+            "table",
+            "blockquote",
         ]
+    )
 
-    chunks = []
-    start = 0
+    document = Document(text=html)
+    html_nodes = parser.get_nodes_from_documents([document])
 
-    while start < len(section_text):
-        end = _find_boundary_backward(section_text, start + chunk_size)
+    # ---------------------------------------------------------
+    # 3. Walk nodes and maintain heading hierarchy
+    # ---------------------------------------------------------
+    heading_path = []
+    prepared_nodes = []
 
-        chunk_content = section_text[start:end]
-        chunks.append(
+    for node in html_nodes:
+        tag = node.metadata.get("tag", "")
+        text = node.text.strip()
+
+        if not text:
+            continue
+
+        # -------------------------
+        # Heading
+        # -------------------------
+        if tag in ["h1", "h2", "h3", "h4", "h5", "h6"]:
+            level = int(tag[1])
+
+            # Keep only headings above the current level
+            heading_path = heading_path[: level - 1]
+
+            heading_path.append(text)
+
+            # IMPORTANT:
+            # Do NOT create a chunk for the heading.
+            # It becomes metadata for following content.
+            continue
+
+        # -------------------------
+        # Content type
+        # -------------------------
+        if tag == "table":
+            content_type = "table"
+
+        elif tag == "li":
+            content_type = "list"
+
+        elif tag == "blockquote":
+            content_type = "blockquote"
+
+        else:
+            content_type = "prose"
+
+        prepared_nodes.append(
             {
-                "content": chunk_content,
-                "header": header,
-                "start_char": start,
-                "end_char": end,
+                "node": node,
+                "heading_path": list(heading_path),
+                "content_type": content_type,
             }
         )
 
-        if end == len(section_text):
-            break
+    # ---------------------------------------------------------
+    # 4. Split content
+    # ---------------------------------------------------------
+    splitter = SentenceSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
 
-        overlap_start = max(0, end - overlap)
-        start = _find_boundary_backward(section_text, overlap_start)
+    final_chunks = []
 
-        if start >= end:
-            start = end
+    for item in prepared_nodes:
+        node = item["node"]
+        content_type = item["content_type"]
 
-    return chunks
+        # ---------------------------------------------
+        # Structural content stays together
+        # ---------------------------------------------
+        if content_type in ["table", "blockquote"]:
+            chunks = [node]
 
+        # ---------------------------------------------
+        # Lists: keep consecutive list items together
+        # ---------------------------------------------
+        elif content_type == "list":
+            chunks = [node]
 
-def chunk_text(
-    text: str,
-    chunk_size: int = 2048,
-    overlap: int = 300,
-) -> list[dict]:
-    """Split markdown into chunks using hybrid structural split.
+        # ---------------------------------------------
+        # Prose: sentence-aware chunking
+        # ---------------------------------------------
+        else:
+            chunks = splitter.get_nodes_from_documents([node])
 
-    Phase A: Split by Markdown headers (#, ##, ###) using MarkdownNodeParser.
-    Phase B: For sections exceeding chunk_size, split at sentence boundaries.
+        # ---------------------------------------------
+        # Preserve our metadata
+        # ---------------------------------------------
+        for chunk in chunks:
+            chunk.metadata = {
+                "title": title,
+                "heading_path": " > ".join(item["heading_path"]),
+                "content_type": content_type,
+            }
 
-    Args:
-        text: Markdown content to chunk.
-        chunk_size: Maximum number of characters per chunk.
-        overlap: Number of overlapping characters between chunks.
+            final_chunks.append(chunk)
 
-    Returns:
-        A list of dicts with 'content', 'header', 'start_char', and 'end_char' keys.
-    """
-    if not text or not text.strip():
-        return []
+    # ---------------------------------------------------------
+    # 5. Add chunk index
+    # ---------------------------------------------------------
+    for index, chunk in enumerate(final_chunks):
+        chunk.metadata["chunk_index"] = index
 
-    doc = Document(text=text)
-    parser = MarkdownNodeParser()
-    nodes = parser.get_nodes_from_documents([doc])
-
-    all_chunks = []
-    for node in nodes:
-        section_text = node.text
-        header = _extract_header(section_text)
-        body = _strip_header(section_text)
-
-        chunks = _refine_long_section(body, header, chunk_size, overlap)
-        all_chunks.extend(chunks)
-
-    return all_chunks
-
-
-def _extract_header(text: str) -> str:
-    """Extract the markdown header line from a section."""
-    first_line = text.split("\n", 1)[0]
-    if first_line.startswith("#"):
-        return first_line
-    return ""
-
-
-def _strip_header(text: str) -> str:
-    """Remove the header line, returning only the body."""
-    if text.startswith("#"):
-        parts = text.split("\n", 1)
-        if len(parts) > 1:
-            return parts[1].strip()
-    return text
+    return final_chunks
