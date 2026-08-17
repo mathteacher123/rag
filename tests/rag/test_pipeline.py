@@ -1,130 +1,127 @@
 from unittest.mock import patch
 
-import pytest
-
-from app.services.rag.chunking import chunk_text
-from app.services.rag.scraping import fetch_and_convert_to_markdown
+from app.services.rag.chunking import chunk_html
+from app.services.rag.scraping import fetch_html
 
 
 class TestScraping:
     @patch("app.services.rag.scraping.trafilatura")
-    def test_fetch_and_convert_returns_markdown(self, mock_trafilatura, sample_html):
-        mock_trafilatura.fetch_url.return_value = sample_html
-        mock_trafilatura.extract.return_value = sample_html
+    def test_fetch_html_returns_raw_html(
+        self, mock_trafilatura, sample_html_for_scraping
+    ):
+        mock_trafilatura.fetch_url.return_value = sample_html_for_scraping
+        mock_trafilatura.extract.return_value = sample_html_for_scraping
 
-        result = fetch_and_convert_to_markdown("https://example.com")
+        result = fetch_html("https://example.com")
 
         assert isinstance(result, str)
         assert len(result) > 0
+        assert "<html>" in result
 
     @patch("app.services.rag.scraping.trafilatura")
-    def test_fetch_and_convert_returns_empty_on_none(self, mock_trafilatura):
+    def test_fetch_html_returns_empty_on_none(self, mock_trafilatura):
         mock_trafilatura.fetch_url.return_value = None
 
-        result = fetch_and_convert_to_markdown("https://invalid.url")
+        result = fetch_html("https://invalid.url")
 
         assert result == ""
 
 
-class TestChunkingPhaseA:
-    """Phase A: Markdown header splitting."""
-
-    def test_returns_list_of_dicts(self, sample_markdown):
-        chunks = chunk_text(sample_markdown)
+class TestChunkHtmlBasic:
+    def test_returns_list_of_documents(self, sample_html):
+        chunks = chunk_html(sample_html)
 
         assert isinstance(chunks, list)
         assert len(chunks) > 0
-        assert all(
-            "content" in c and "header" in c and "start_char" in c and "end_char" in c
-            for c in chunks
-        )
 
-    def test_splits_by_headers(self, multi_header_markdown):
-        chunks = chunk_text(multi_header_markdown, chunk_size=5000)
-
-        headers = [c["header"] for c in chunks]
-        assert "# First Header" in headers
-        assert "## Second Header" in headers
-        assert "### Third Header" in headers
-        assert "## Another Second Header" in headers
-
-    def test_empty_string(self):
-        chunks = chunk_text("")
+    def test_empty_html_returns_empty(self):
+        chunks = chunk_html("")
         assert chunks == []
 
-    def test_whitespace_only(self):
-        chunks = chunk_text("   \n\n  ")
+    def test_whitespace_only_returns_empty(self):
+        chunks = chunk_html("   \n\n  ")
         assert chunks == []
 
-    def test_no_headers_returns_single_chunk(self):
-        text = "Just plain text without any headers."
-        chunks = chunk_text(text, chunk_size=5000)
 
-        assert len(chunks) == 1
-        assert chunks[0]["header"] == ""
+class TestChunkHtmlMetadata:
+    def test_title_extracted(self, sample_html):
+        chunks = chunk_html(sample_html)
 
+        assert chunks[0].metadata["title"] == "Test Page"
 
-class TestChunkingPhaseB:
-    """Phase B: Sentence-aware splitting for long sections."""
+    def test_title_missing(self, html_no_title):
+        chunks = chunk_html(html_no_title)
 
-    def test_short_section_not_split(self, sample_markdown):
-        chunks = chunk_text(sample_markdown, chunk_size=5000)
+        assert chunks[0].metadata["title"] is None
 
-        for chunk in chunks:
-            assert len(chunk["content"]) <= 5000
+    def test_chunk_index_sequential(self, sample_html):
+        chunks = chunk_html(sample_html)
 
-    def test_long_section_respects_chunk_size(self, long_section_markdown):
-        chunks = chunk_text(long_section_markdown, chunk_size=200, overlap=50)
+        for i, chunk in enumerate(chunks):
+            assert chunk.metadata["chunk_index"] == i
 
-        for chunk in chunks:
-            assert len(chunk["content"]) <= 250
+    def test_heading_metadata(self, html_with_headings):
+        chunks = chunk_html(html_with_headings)
 
-    def test_overlap_at_sentence_boundary(self):
-        sentences = " ".join([f"Sentence {i}." for i in range(30)])
-        text = f"# Header\n\n{sentences}"
-        chunks = chunk_text(text, chunk_size=150, overlap=50)
+        heading_paths = [c.metadata["heading_path"] for c in chunks]
+        assert "Introduction" in heading_paths[0]
+        assert "Background" in heading_paths[1]
 
-        if len(chunks) > 1:
-            for i in range(1, len(chunks)):
-                prev_content = chunks[i - 1]["content"]
-                curr_content = chunks[i]["content"]
+    def test_heading_hierarchy_nesting(self, html_with_headings):
+        chunks = chunk_html(html_with_headings)
 
-                prev_words = set(prev_content.split())
-                curr_words = set(curr_content.split())
-                overlap_words = prev_words & curr_words
-
-                assert len(overlap_words) > 0
-
-    def test_overlap_never_splits_mid_sentence(self):
-        sentences = [f"Long sentence number {i} with extra words. " for i in range(50)]
-        text = "# Header\n\n" + "".join(sentences)
-        chunks = chunk_text(text, chunk_size=300, overlap=100)
-
-        for chunk in chunks:
-            content = chunk["content"].strip()
-            if content:
-                ends_cleanly = (
-                    content.endswith(".")
-                    or content.endswith("?")
-                    or content.endswith("\n")
-                )
-                assert ends_cleanly
+        path = "Introduction > Background > Specifics"
+        specifics = [c for c in chunks if "Specifics" in c.metadata["heading_path"]]
+        assert len(specifics) == 1
+        assert path == specifics[0].metadata["heading_path"]
 
 
-class TestChunkingIntegration:
-    def test_full_pipeline(self, sample_markdown):
-        chunks = chunk_text(sample_markdown, chunk_size=500, overlap=100)
+class TestChunkHtmlContentType:
+    def test_content_type_prose(self, sample_html):
+        chunks = chunk_html(sample_html)
 
-        assert len(chunks) > 0
-        for chunk in chunks:
-            assert len(chunk["content"]) > 0
-            assert chunk["start_char"] < chunk["end_char"]
+        content_types = [c.metadata["content_type"] for c in chunks]
+        assert "prose" in content_types
+
+    def test_content_type_table(self, html_with_table):
+        chunks = chunk_html(html_with_table)
+
+        content_types = [c.metadata["content_type"] for c in chunks]
+        assert "table" in content_types
+
+    def test_content_type_list(self, html_with_list):
+        chunks = chunk_html(html_with_list)
+
+        content_types = [c.metadata["content_type"] for c in chunks]
+        assert "list" in content_types
+
+    def test_content_type_blockquote(self, html_with_blockquote):
+        chunks = chunk_html(html_with_blockquote)
+
+        content_types = [c.metadata["content_type"] for c in chunks]
+        assert "blockquote" in content_types
 
 
-@pytest.mark.integration
-class TestIntegration:
-    def test_fetch_real_url(self):
-        result = fetch_and_convert_to_markdown("https://example.com")
+class TestChunkHtmlSplitting:
+    def test_long_prose_is_split(self, long_html):
+        chunks = chunk_html(long_html, chunk_size=200, chunk_overlap=50)
 
-        assert isinstance(result, str)
-        assert len(result) > 0
+        assert len(chunks) > 1
+
+    def test_table_stays_intact(self, html_with_table):
+        chunks = chunk_html(html_with_table)
+
+        table_chunks = [c for c in chunks if c.metadata["content_type"] == "table"]
+        assert len(table_chunks) == 1
+
+    def test_list_stays_intact(self, html_with_list):
+        chunks = chunk_html(html_with_list)
+
+        list_chunks = [c for c in chunks if c.metadata["content_type"] == "list"]
+        assert len(list_chunks) == 1
+
+    def test_blockquote_stays_intact(self, html_with_blockquote):
+        chunks = chunk_html(html_with_blockquote)
+
+        bq = [c for c in chunks if c.metadata["content_type"] == "blockquote"]
+        assert len(bq) == 1
