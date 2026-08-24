@@ -20,7 +20,7 @@ def fetch_html(url: str) -> tuple[str | None, str]:
     title = title_tag.get_text(" ", strip=True) if title_tag else None
 
     html_content = trafilatura.extract(
-        downloaded, include_links=True, include_images=True, output_format="html"
+        downloaded, include_links=True, include_images=True, output_format="html", favor_recall=True
     )
     if html_content is None:
         return title, ""
