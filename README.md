@@ -60,3 +60,13 @@ source ./dev_env.sh
 ```bash
 echo "source /path/to/your/project/dev_env.sh" >> ~/.bashrc
 ```
+
+---
+
+## 5. OpenCode CLI Path Setup
+
+After installing OpenCode, run the following script to add the `opencode` binary to your PATH permanently:
+
+```bash
+bash ./setup-opencode.sh
+```
