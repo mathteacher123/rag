@@ -1,37 +1,57 @@
-from llama_index.core.schema import TextNode
+from llama_index.core import Document
+from llama_index.core.ingestion import IngestionPipeline, DocstoreStrategy
+from llama_index.core.node_parser import MarkdownNodeParser, SentenceSplitter
 
-from app.services.rag.chunking import chunk_html
 from app.services.rag.embedding import embed_model
-from app.services.rag.scraping import fetch_html
-from app.services.rag.url_utils import normalize_url
-from app.services.rag.vector_store import vector_store
+from app.services.rag.scraping import fetch_url
+from app.services.rag.url_utils import make_doc_id
+from app.services.rag.vector_store import vector_store, docstore
+
+pipeline = IngestionPipeline(
+    transformations=[
+        MarkdownNodeParser(),
+        SentenceSplitter(chunk_size=1024, chunk_overlap=100),
+        embed_model,
+    ],
+    docstore=docstore,
+    vector_store=vector_store,
+    docstore_strategy=DocstoreStrategy.UPSERTS,
+)
 
 
 def ingest_url(url: str) -> dict:
-    norm_url = normalize_url(url)
+    result = fetch_url(url)
+    text = result["text"]
+    if not text:
+        return {"url": url, "status": "failed_to_fetch"}
 
-    title, raw_html = fetch_html(url)
-    if not raw_html:
-        return {"url": url, norm_url=norm_url, "chunk_count": 0, "status": "failed_to_fetch"}
+    metadata = result["metadata"]
+    doc_id = make_doc_id(url, metadata.get("canonical_url"))
 
-    chunks = chunk_html(raw_html, title=title)
-    #print(url, norm_url, raw_html, sep="\n==========================\n")
-    nodes = []
-    for chunk in chunks:
-        node = TextNode(
-            text=chunk.text,
-            metadata=chunk.metadata,
-            # Defines the source document relationship natively
-            relationships={
-                "1": {"node_id": norm_url} # "1" is the internal enum string for PARENT
-            }
+    document = Document(
+        doc_id=doc_id,
+        text=text,
+        metadata={
+            "source_uri": url,
+            "source_type": "url",
+        } | metadata,
+        excluded_llm_metadata_keys=["source_uri", "source_type", "canonical_url"],
+        excluded_embed_metadata_keys=["source_uri", "source_type", "canonical_url"],
+    )
 
-        )
-        node.embedding = embed_model.get_text_embedding(chunk.text)
-        nodes.append(node)
-        #print(node, node.metadata, "\n---------------------------\n")
+    nodes = pipeline.run(documents=[document])
 
-    vector_store.delete(ref_doc_id=norm_url)
-    vector_store.add(nodes)
+    return {"url": url, "chunk_count": len(nodes), "status": "success"}
 
-    return {"url": url, norm_url=norm_url, "chunk_count": len(nodes), "status": "success"}
+
+def delete_url(url: str) -> dict:
+    result = fetch_url(url)
+    text = result["text"]
+    if not text:
+        return {"url": url, "status": "failed_to_fetch"}
+
+    metadata = result["metadata"]
+    doc_id = make_doc_id(url, metadata.get("canonical_url"))
+    vector_store.delete(ref_doc_id=doc_id)
+    docstore.delete_ref_doc(doc_id, raise_error=False)
+    return {"url": url, "status": "deleted"}

@@ -9,7 +9,8 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str
     EMBEDDING_MODEL: str = "gemini-embedding-001"
     EMBEDDING_DIM: int = 768
-    COLLECTION_NAME: str = "rag_documents"
+    VECTOR_STORE_TABLE: str = "llamaindex"
+    DOCSTORE_TABLE: str = "docstore"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

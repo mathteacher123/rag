@@ -1,0 +1,33 @@
+Files Changed (5 files, +127 / -64 lines) for ingestion pipeline
+1. app/services/rag/scraping.py — fetch_html → fetch_url
+- Renamed function and changed return type from tuple[str | None, str] to dict
+- Output format: HTML → Markdown (output_format="markdown")
+- Extraction flags: favor_recall=True → favor_precision=True, include_formatting=True, include_comments=False
+- Metadata: Now uses trafilatura.extract_metadata() for both title and canonical URL
+- Fallback preserved: BeautifulSoup <title> fallback when trafilatura metadata is missing
+2. app/services/rag/url_utils.py — Major expansion
+- normalize_url: Uses urlsplit/urlunsplit, preserves non-default ports, strips tracking params (fbclid, gclid, utm_*, etc.), sorts query params for stable ordering
+- New make_doc_id: SHA-256 hash of normalized URL, with optional canonical_url resolution via urljoin
+3. app/services/rag/ingestion.py — Pipeline rewrite
+- Architecture: Manual chunking → LlamaIndex IngestionPipeline with DocstoreStrategy.UPSERTS
+- Data model: TextNode → Document with stable doc_id via make_doc_id
+- Two-stage parsing: MarkdownNodeParser + SentenceSplitter fallback
+- Metadata filtering: excluded_llm_metadata_keys / excluded_embed_metadata_keys
+- Removed: normalize_url calls, html_to_markdown import, hardcoded docstore credentials
+- Fixed: Tab indentation, dict unpacking bug (fetch_url returns dict, not tuple)
+- New delete_url: Mirrors ingest_url — fetches URL, extracts canonical_url, uses make_doc_id for consistent deletion
+4. app/services/rag/vector_store.py — Docstore added
+- Added PostgresDocumentStore construction using settings.SUPABASE_DB_URL
+- Updated table name references: settings.VECTOR_STORE_TABLE and settings.DOCSTORE_TABLE
+5. app/core/config.py — Settings update
+- Removed: COLLECTION_NAME
+- Added: VECTOR_STORE_TABLE (default "llamaindex") and DOCSTORE_TABLE (default "docstore")
+
+Key Design Decisions
+Decision	Rationale
+Markdown over HTML	Cleaner for LLM embedding and chunking
+favor_precision over favor_recall	Less noise in extracted content
+make_doc_id (SHA-256)	Stable, deterministic IDs for upsert/delete consistency
+PostgresDocumentStore in vector_store.py	Single connection source, shared with vector store
+DocstoreStrategy.UPSERTS	Idempotent ingestion — no duplicates, skips unchanged
+Remove normalize_url from ingestion	make_doc_id handles normalization internally
