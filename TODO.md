@@ -108,3 +108,17 @@ Returns `list[Document]`.
 ### Quality Assurance
 - [x] Run `ruff check . && ruff format .`
 - [x] Run `pytest`
+
+## Ingestion Pipeline Refactor Sprint
+
+### LlamaIndex/RAG Pipeline Tasks
+- [x] Refactor `app/services/rag/scraping.py`: rename `fetch_html` → `fetch_url`, return dict with `text` (markdown) and `metadata` (title, canonical_url), use `favor_precision=True`
+- [x] Refactor `app/services/rag/url_utils.py`: add tracking param stripping, query param sorting, non-default port preservation to `normalize_url`; add `make_doc_id(url, canonical_url)` using SHA-256
+- [x] Refactor `app/services/rag/ingestion.py`: replace manual chunking with `IngestionPipeline` (MarkdownNodeParser + SentenceSplitter), use `Document` with stable `doc_id`, add `delete_url` with fetch + canonical URL + `make_doc_id`
+- [x] Update `app/services/rag/vector_store.py`: add `PostgresDocumentStore` construction, use `settings.VECTOR_STORE_TABLE` and `settings.DOCSTORE_TABLE`
+
+### Configuration Layer
+- [x] Update `app/core/config.py`: remove `COLLECTION_NAME`, add `VECTOR_STORE_TABLE` (default `"llamaindex"`) and `DOCSTORE_TABLE` (default `"docstore"`)
+
+### Quality Assurance
+- [ ] Run `ruff check . && ruff format .`
