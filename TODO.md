@@ -134,3 +134,20 @@ Returns `list[Document]`.
 
 ### Quality Assurance
 - [x] Run `ruff check . && ruff format .`
+
+## Query Engine Sprint
+
+### Dependencies
+- [ ] Add `llama-index-llms-google-genai` to `pyproject.toml` dependencies
+
+### Configuration Layer
+- [ ] Update `app/core/config.py`: add `LLM_MODEL` (default `"gemini-2.5-flash"`), `LLM_TEMPERATURE` (default `0.1`), `LLM_MAX_TOKENS` (default `1024`), `RETRIEVAL_TOP_K` (default `4`), `RETRIEVAL_SIMILARITY_CUTOFF` (default `0.7`), `LLM_SYSTEM_PROMPT` (default RAG system prompt)
+
+### LlamaIndex/RAG Pipeline Tasks
+- [ ] Create `app/services/rag/llm.py`: initialize `GoogleGenAI` LLM singleton from settings, export singleton
+- [ ] Create `app/services/rag/engine.py`: build `VectorIndexRetriever` from existing `vector_store` + `embed_model` with `similarity_cutoff` and `top_k` from settings
+- [ ] Create `app/services/rag/engine.py`: build `RetrieverQueryEngine` singleton with retriever + LLM + system prompt from settings
+- [ ] Update `app/services/rag/__init__.py`: export `llm` and `query_engine` singletons
+
+### Quality Assurance
+- [ ] Run `ruff check . && ruff format .`
