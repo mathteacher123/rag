@@ -126,11 +126,11 @@ Returns `list[Document]`.
 ## Ingestion Pipeline Refactor Completion Sprint
 
 ### Dependencies
-- [ ] In `pyproject.toml`: replace `llama-index` with `llama-index-core`; add `llama-index-storage-docstore-postgres`
+- [x] In `pyproject.toml`: replace `llama-index` with `llama-index-core`; add `llama-index-storage-docstore-postgres`
 
 ### LlamaIndex/RAG Pipeline Tasks
-- [ ] In `app/services/rag/vector_store.py`: construct `PostgresKVStore` manually and inject into `PostgresDocumentStore(postgres_kvstore=...)` instead of `from_conn_string`
-- [ ] In `app/services/rag/__init__.py`: export `fetch_url`, `make_doc_id`, `docstore`; remove stale `fetch_html` / `normalize_url` exports
+- [x] In `app/services/rag/vector_store.py`: construct `PostgresKVStore` manually and inject into `PostgresDocumentStore(postgres_kvstore=...)` instead of `from_conn_string`
+- [x] In `app/services/rag/__init__.py`: export `fetch_url`, `make_doc_id`, `docstore`; remove stale `fetch_html` / `normalize_url` exports
 
 ### Quality Assurance
-- [ ] Run `ruff check . && ruff format .`
+- [x] Run `ruff check . && ruff format .`
