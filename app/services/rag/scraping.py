@@ -1,10 +1,12 @@
 import trafilatura
 from bs4 import BeautifulSoup
 
+
 def fetch_url(url: str) -> dict:
     """
-    Fetches a URL, extracts markdown content, and secures metadata (title, canonical url).
-    Provides a bulletproof BeautifulSoup fallback for missing titles.
+    Fetches a URL, extracts markdown content, and secures metadata
+    (title, canonical url). Provides a bulletproof BeautifulSoup
+    fallback for missing titles.
     """
     # 1. Fetch the raw HTML string
     downloaded = trafilatura.fetch_url(url)
@@ -28,13 +30,10 @@ def fetch_url(url: str) -> dict:
         output_format="markdown",
         include_comments=False,
         include_formatting=True,
-        favor_precision=True
+        favor_precision=True,
     )
 
     return {
         "text": markdown_content or "",
-        "metadata": {
-            "title": title,
-            "canonical_url": canonical_url
-        }
+        "metadata": {"title": title, "canonical_url": canonical_url},
     }

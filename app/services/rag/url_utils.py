@@ -1,9 +1,17 @@
 import hashlib
-from urllib.parse import urlsplit, urlunsplit, urljoin, parse_qsl, urlencode
+from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 TRACKING_PARAMS = {
-    "fbclid", "gclid", "msclkid", "dclid", "ref", "session", "sessionid",
-    "mc_cid", "mc_eid", "igshid",
+    "fbclid",
+    "gclid",
+    "msclkid",
+    "dclid",
+    "ref",
+    "session",
+    "sessionid",
+    "mc_cid",
+    "mc_eid",
+    "igshid",
 }
 TRACKING_PREFIXES = ("utm_",)
 

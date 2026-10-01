@@ -1,11 +1,11 @@
 from llama_index.core import Document
-from llama_index.core.ingestion import IngestionPipeline, DocstoreStrategy
+from llama_index.core.ingestion import DocstoreStrategy, IngestionPipeline
 from llama_index.core.node_parser import MarkdownNodeParser, SentenceSplitter
 
 from app.services.rag.embedding import embed_model
 from app.services.rag.scraping import fetch_url
 from app.services.rag.url_utils import make_doc_id
-from app.services.rag.vector_store import vector_store, docstore
+from app.services.rag.vector_store import docstore, vector_store
 
 pipeline = IngestionPipeline(
     transformations=[
@@ -34,7 +34,8 @@ def ingest_url(url: str) -> dict:
         metadata={
             "source_uri": url,
             "source_type": "url",
-        } | metadata,
+        }
+        | metadata,
         excluded_llm_metadata_keys=["source_uri", "source_type", "canonical_url"],
         excluded_embed_metadata_keys=["source_uri", "source_type", "canonical_url"],
     )
