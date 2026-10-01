@@ -10,6 +10,7 @@ dependencies = [
     "llama-index-vector-stores-postgres",
      "llama-index-storage-docstore-postgres",
     "llama-index-embeddings-google-genai",
+    "llama-index-llms-google-genai",
     "python-dotenv",
     "psycopg2-binary",
     "supabase",
