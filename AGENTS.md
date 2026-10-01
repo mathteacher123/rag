@@ -91,11 +91,19 @@ All generated code, scripts, and tests must align exactly with this architectura
 
 ## 🔨 Phase 3: Build & Execution Guardrails
 
+### 0. Incremental Build Mode — No Test Generation or Execution
+- **Current Phase:** The backend is being built incrementally. The user performs manual testing.
+- **Do NOT generate test files.** Do not create new files under `tests/`. Do not add test functions to existing test files.
+- **Do NOT run `pytest`.** Do not execute any test suite. The user will manually verify behavior.
+- **Do NOT modify existing test files** unless the user explicitly asks.
+- **Verification is manual.** After completing a task, run `ruff check . && ruff format .` to ensure code quality, then commit. The user will test the feature manually.
+- **This constraint is lifted only when the user explicitly says** that automated testing should resume. Until then, all testing instructions below are preserved for future use but must NOT be followed.
+
 ### 1. Atomic Execution Loop
 - Operate strictly under a **Single Checkbox Execution Rule** [^1]. Take exactly one task from `TODO.md`, implement it, verify it, and log it before touching another task [^1].
 - **Definition of "Log It":** "Log it" means to permanently record your completed work using an isolated Git commit. It does not mean writing console prints or application logger statements.
-- **Explicit Checkbox Completion:** Immediately after a task's tests successfully pass and the Git commit is logged, you **MUST** modify the `TODO.md` file, physically change that task's checkbox from `- [ ]` to `- [x]`, and save the file [^1]. Do not look at or begin a new task until this status update is written to disk [^1].
-- Immediately after writing code for a checkbox, run `ruff` to clean syntax, followed by `pytest` to verify runtime execution [^1].
+- **Explicit Checkbox Completion:** Immediately after a task is manually verified by the user and the Git commit is logged, you **MUST** modify the `TODO.md` file, physically change that task's checkbox from `- [ ]` to `- [x]`, and save the file [^1]. Do not look at or begin a new task until this status update is written to disk [^1].
+- Immediately after writing code for a checkbox, run `ruff check . && ruff format .` to clean syntax and formatting [^1].
 
 ### 2. Semantic Git Commits Automation
 - Once a task checkbox turns green (passing tests), you are authorized to run terminal git commands to commit (log) the code automatically [^1].
