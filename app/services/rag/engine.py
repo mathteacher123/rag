@@ -1,4 +1,4 @@
-from llama_index.core import VectorStoreIndex
+from llama_index.core import VectorStoreIndex, get_response_synthesizer
 from llama_index.core.query_engine import RetrieverQueryEngine
 from llama_index.core.retrievers import VectorIndexRetriever
 
@@ -18,7 +18,9 @@ retriever = VectorIndexRetriever(
     vector_store_similarity_cutoff=settings.RETRIEVAL_SIMILARITY_CUTOFF,
 )
 
+response_synthesizer = get_response_synthesizer(llm=llm)
+
 query_engine = RetrieverQueryEngine(
     retriever=retriever,
-    llm=llm,
+    response_synthesizer=response_synthesizer,
 )
