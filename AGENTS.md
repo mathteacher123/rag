@@ -18,8 +18,7 @@ All generated code, scripts, and tests must align exactly with this architectura
 │   │   │   └── endpoints/   # Chat, ingest, and health check endpoints
 │   │   └── router.py        # Main API v1 routing switch
 │   ├── core/                # System configuration and singletons
-│   │   ├── config.py        # Pydantic environment validation settings
-│   │   └── supabase.py      # Unified Supabase/pgvector client singleton
+│   │   └── config.py        # Pydantic environment validation settings
 │   ├── services/            # Core business logic processing engine
 │   │   └── rag/             # LlamaIndex execution environment
 │   │       ├── chunking.py  # Ingestion pipelines & text split strategies
@@ -84,7 +83,6 @@ All generated code, scripts, and tests must align exactly with this architectura
 ### 3. Directory & Import Architectural Rules
 - All API routing switches must live strictly inside `app/api/`.
 - All LlamaIndex ingestion, chunking, and index logic must be isolated inside `app/services/rag/`.
-- All database and vector connections must funnel through a single, unified client singleton originating from `app/core/supabase.py`.
 - **Strict Absolute Imports:** Absolute imports are required across the entire codebase (e.g., `from app.core.config import settings`). Relative imports (e.g., `from ..core import`) are strictly forbidden.
 
 ---
@@ -116,8 +114,10 @@ All generated code, scripts, and tests must align exactly with this architectura
   - `refactor: ...` for structural code cleaning without behavior change.
 - **Commit Workflow (only when explicitly instructed):**
   1. User says: "commit" or equivalent explicit instruction.
-  2. Run: `git add . && git commit -m "<type>(<scope>): <description>"`
-  3. Update `TODO.md` by changing the task checkbox to `- [x]`.
+  2. If the user specifies file path(s), stage only those files: `git add <file1> <file2> ...`
+  3. If the user does not specify file path(s), stage all changed files: `git add .`
+  4. Run: `git commit -m "<type>(<scope>): <description>"`
+  5. Update `TODO.md` by changing the task checkbox to `- [x]`.
 
 ### 3. Error Recovery Guardrails
 - If the user reports a bug after manual testing, you have 2 autonomous attempts to fix the syntax or logical bug [^1].
