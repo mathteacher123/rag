@@ -101,23 +101,24 @@ All generated code, scripts, and tests must align exactly with this architectura
 
 ### 1. Atomic Execution Loop
 - Operate strictly under a **Single Checkbox Execution Rule** [^1]. Take exactly one task from `TODO.md`, implement it, verify it, and log it before touching another task [^1].
-- **Definition of "Log It":** "Log it" means to permanently record your completed work using an isolated Git commit. It does not mean writing console prints or application logger statements.
-- **Explicit Checkbox Completion:** Immediately after a task is manually verified by the user and the Git commit is logged, you **MUST** modify the `TODO.md` file, physically change that task's checkbox from `- [ ]` to `- [x]`, and save the file [^1]. Do not look at or begin a new task until this status update is written to disk [^1].
+- **Definition of "Log It":** "Log it" means to complete the task and leave changes in the working directory for the user to review. It does not mean writing console prints or application logger statements.
+- **Explicit Checkbox Completion:** Immediately after a task is manually verified by the user, you **MUST** modify the `TODO.md` file, physically change that task's checkbox from `- [ ]` to `- [x]`, and save the file [^1]. Do not look at or begin a new task until this status update is written to disk [^1].
 - Immediately after writing code for a checkbox, run `ruff check . && ruff format .` to clean syntax and formatting [^1].
 
-### 2. Semantic Git Commits Automation
-- Once a task checkbox turns green (passing tests), you are authorized to run terminal git commands to commit (log) the code automatically [^1].
-- You must strictly use the **Semantic Commits (Angular)** format for all commits [^1]. Match the task to these exact types:
-  - `feat: ...` for a new endpoint, database schema, or pipeline logic [^1].
-  - `fix: ...` for correcting an error, query failure, or edge case [^1].
-  - `test: ...` for adding or refactoring test suites [^1].
-  - `refactor: ...` for structural code cleaning without changing behavior [^1].
-- **Commit Workflow Example:** 
-  1. Complete task: "Build `/chat` streaming endpoint in `app/api/v1/endpoints/chat.py`" [^1]
-  2. Run `pytest` -> Success [^1].
-  3. Run: `git add . && git commit -m "feat(api): implement streaming chat endpoint via fastapi response"` [^1]
-  4. Update `TODO.md` by changing the task checkbox to `- [x]` [^1].
+### 2. Git Commits — Only on Explicit Instruction
+- **Do NOT run `git commit` or any git commands that modify the repository unless the user explicitly instructs you to do so.**
+- After completing a task, run `ruff check . && ruff format .` to ensure code quality, then stop and wait for the user's review.
+- When the user explicitly says to commit, you are authorized to run terminal git commands to commit the code.
+- You must strictly use the **Semantic Commits (Angular)** format for all commits. Match the task to these exact types:
+  - `feat: ...` for a new endpoint, database schema, or pipeline logic.
+  - `fix: ...` for correcting an error, query failure, or edge case.
+  - `test: ...` for adding or refactoring test suites.
+  - `refactor: ...` for structural code cleaning without behavior change.
+- **Commit Workflow (only when explicitly instructed):**
+  1. User says: "commit" or equivalent explicit instruction.
+  2. Run: `git add . && git commit -m "<type>(<scope>): <description>"`
+  3. Update `TODO.md` by changing the task checkbox to `- [x]`.
 
 ### 3. Error Recovery Guardrails
-- If a test fails after coding, you have 2 autonomous attempts to fix the syntax or logical bug [^1].
-- If the bug is not resolved after 2 attempts, discard the dirty working changes using `git stash` or `git checkout`, declare the blocker to the user in the terminal, and stop [^1]. Never enter a loop that pollutes the codebase [^1].
+- If the user reports a bug after manual testing, you have 2 autonomous attempts to fix the syntax or logical bug [^1].
+- If the bug is not resolved after 2 attempts, declare the blocker to the user in the terminal and stop [^1]. Never enter a loop that pollutes the codebase [^1].
