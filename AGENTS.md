@@ -85,6 +85,11 @@ All generated code, scripts, and tests must align exactly with this architectura
 - All LlamaIndex ingestion, chunking, and index logic must be isolated inside `app/services/rag/`.
 - **Strict Absolute Imports:** Absolute imports are required across the entire codebase (e.g., `from app.core.config import settings`). Relative imports (e.g., `from ..core import`) are strictly forbidden.
 
+### 4. Dependency Installation Guardrail
+- **Never Install On Your Own:** Do not run `pip install`, `uv pip install`, `poetry add`, `pipenv install`, `npm install`, or any other package installation command autonomously — including dev tools such as `ruff`, `pytest`, or `chainlit`.
+- **Declare, Don't Install:** If a task requires a missing package, only declare it in `pyproject.toml` dependencies and stop there. The human performs the actual installation.
+- **Ask Before Installing:** If executing a command requires a package that is absent from the environment, pause and ask the user for explicit permission first, stating (1) the package name, (2) the target environment (e.g. `.venv`), and (3) why it is needed. Proceed only after approval.
+
 ---
 
 ## 🔨 Phase 3: Build & Execution Guardrails
