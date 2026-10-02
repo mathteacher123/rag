@@ -220,6 +220,5 @@ __marimo__/
 # Chainlit runtime / local user uploads
 .chainlit/
 .files/
-requirements.txt
 
 z*.txt
