@@ -18,6 +18,7 @@ dependencies = [
     "trafilatura",
     "beautifulsoup4",
     "requests",
+    "chainlit",
 ]
 
 [project.optional-dependencies]
