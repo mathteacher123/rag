@@ -151,3 +151,18 @@ Returns `list[Document]`.
 
 ### Quality Assurance
 - [x] Run `ruff check . && ruff format .`
+
+## Chainlit Chat UI Sprint
+
+### Dependencies
+- [ ] In `pyproject.toml`: add `chainlit` to `[project] dependencies`
+
+### LlamaIndex/RAG Pipeline
+- [ ] In `app/services/rag/engine.py`: build `get_response_synthesizer(llm=llm, streaming=True, text_qa_template=...)` where the template is a `ChatPromptTemplate` using `settings.LLM_SYSTEM_PROMPT` as the system message plus the standard `{context_str}` / `{query_str}` QA prompt
+
+### Backend/FastAPI
+- [ ] Create `app/chat.py`: set `Settings.callback_manager = CallbackManager([cl.LlamaIndexCallbackHandler()])` before importing `query_engine` from `app.services.rag.engine`, add `@cl.on_chat_start` (store engine in `cl.user_session`, send greeting) and `@cl.on_message` (run `query_engine.query` via `cl.make_async`, stream `res.response_gen` tokens via `msg.stream_token`, catch exceptions and surface the error in-chat)
+
+### Quality Assurance
+- [ ] Run `ruff check . && ruff format .`
+- [ ] Manual verification: run `chainlit run app/chat.py` and confirm streamed RAG responses (no `pytest`, no commit)
