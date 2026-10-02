@@ -31,3 +31,6 @@ make_doc_id (SHA-256)	Stable, deterministic IDs for upsert/delete consistency
 PostgresDocumentStore in vector_store.py	Single connection source, shared with vector store
 DocstoreStrategy.UPSERTS	Idempotent ingestion — no duplicates, skips unchanged
 Remove normalize_url from ingestion	make_doc_id handles normalization internally
+
+
+PYTHONPATH=/workspaces/rag chainlit run app/chat.py -w --port 8001

@@ -217,4 +217,9 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# Chainlit runtime / local user uploads
+.chainlit/
+.files/
+requirements.txt
+
 z*.txt
