@@ -757,3 +757,4 @@ yarl==1.25.1
     #   storage3
     #   supabase
     #   supabase-functions
+gradio
