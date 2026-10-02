@@ -1,3 +1,15 @@
+---
+title: RAG AI Assistant
+emoji: 💬
+colorFrom: blue
+colorTo: green
+sdk: gradio
+sdk_version: 5.0.1
+python_version: 3.12.15
+app_file: app.py
+pinned: false
+---
+
 # Local Execution & Testing
 
 This section guides you through running the web server locally and testing its endpoints.
