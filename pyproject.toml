@@ -8,7 +8,7 @@ dependencies = [
     "uvicorn",
     "llama-index-core",
     "llama-index-vector-stores-postgres",
-     "llama-index-storage-docstore-postgres",
+    "llama-index-storage-docstore-postgres",
     "llama-index-embeddings-google-genai",
     "llama-index-llms-google-genai",
     "python-dotenv",
@@ -19,6 +19,13 @@ dependencies = [
     "beautifulsoup4",
     "requests",
     "chainlit",
+    "ragas",
+    "langchain-community<0.4",
+    "rapidfuzz>=3.14.6",
+    "langchain-google-genai>=4.4.2",
+    "google-genai>=2.27.0",
+    "langchain-openai>=1.7.2",
+    "httpx>=0.28.1",
 ]
 
 [project.optional-dependencies]

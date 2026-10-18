@@ -170,16 +170,16 @@ Returns `list[Document]`.
 ## RAGAS Evaluation Sprint
 
 ### Dependencies
-- [ ] In `pyproject.toml`: add `"ragas"` to `[project] dependencies` (declare only — do not install; human installs)
+- [x] In `pyproject.toml`: add `"ragas"` to `[project] dependencies` (declare only — do not install; human installs)
 
 ### Configuration Layer
-- [ ] In `app/core/config.py`: add `EVAL_JUDGE_MODEL` (default `"gemini-2.5-flash"`), `EVAL_TESTSET_SIZE` (default `25`), `EVAL_REPORT_DIR` (default `"evals/reports"`), `EVAL_SEED_URLS: list[str]` (default empty)
+- [x] In `app/core/config.py`: add `EVAL_JUDGE_MODEL` (default `"gemini-2.5-flash"`), `EVAL_TESTSET_SIZE` (default `25`), `EVAL_REPORT_DIR` (default `"evals/reports"`), `EVAL_SEED_URLS: list[str]` (default empty)
 
 ### LlamaIndex/RAG Pipeline (Eval Harness)
-- [ ] Create `evals/__init__.py` (empty package init)
-- [ ] Create `evals/generate_dataset.py`: load `Document`s from `docstore.get_all_documents()` (fallback: refetch `settings.EVAL_SEED_URLS` via `fetch_url`), wrap `llm`/`embed_model` singletons with RAGAS LlamaIndex wrappers, run `TestsetGenerator` with `testset_size=settings.EVAL_TESTSET_SIZE`, write `question`/`ground_truth`/`scenario` rows to `evals/dataset.jsonl`
-- [ ] Create `evals/run_eval.py`: load `evals/dataset.jsonl`; build non-streaming `RetrieverQueryEngine` from `retriever`/`llm`/`text_qa_template` exports in `app/services/rag/engine.py`; query per question capturing `response.response` and `source_nodes` contexts (try/except per row, count empty-context rows); call `ragas.evaluate` with `ContextPrecision`, `ContextRecall`, `Faithfulness`, `AnswerRelevancy`, `AnswerCorrectness` using `EVAL_JUDGE_MODEL` judge (temperature 0) + embedding wrapper; write `rows.csv` + `summary.json` (metric means, empty-context count, error rows, config snapshot) to `evals/reports/<timestamp>/`
-- [ ] In `.gitignore`: add `evals/reports/`
+- [x] Create `evals/__init__.py` (empty package init)
+- [x] Create `evals/generate_dataset.py`: load `Document`s from `docstore.get_all_documents()` (fallback: refetch `settings.EVAL_SEED_URLS` via `fetch_url`), wrap `llm`/`embed_model` singletons with RAGAS LlamaIndex wrappers, run `TestsetGenerator` with `testset_size=settings.EVAL_TESTSET_SIZE`, write `question`/`ground_truth`/`scenario` rows to `evals/dataset.jsonl`
+- [x] Create `evals/run_eval.py`: load `evals/dataset.jsonl`; build non-streaming `RetrieverQueryEngine` from `retriever`/`llm`/`text_qa_template` exports in `app/services/rag/engine.py`; query per question capturing `response.response` and `source_nodes` contexts (try/except per row, count empty-context rows); call `ragas.evaluate` with `ContextPrecision`, `ContextRecall`, `Faithfulness`, `AnswerRelevancy`, `AnswerCorrectness` using `EVAL_JUDGE_MODEL` judge (temperature 0) + embedding wrapper; write `rows.csv` + `summary.json` (metric means, empty-context count, error rows, config snapshot) to `evals/reports/<timestamp>/`
+- [x] In `.gitignore`: add `evals/reports/`
 
 ### Quality Assurance
-- [ ] Run `ruff check . && ruff format .`
+- [x] Run `ruff check . && ruff format .`
