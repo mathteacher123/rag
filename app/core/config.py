@@ -7,11 +7,12 @@ class Settings(BaseSettings):
     SUPABASE_DB_URL: str
     SUPABASE_DB_URL_ASYNC: str
     GEMINI_API_KEY: str
+    FREELLMAPI_API_KEY: str = ""
     EMBEDDING_MODEL: str = "gemini-embedding-001"
     EMBEDDING_DIM: int = 768
     VECTOR_STORE_TABLE: str = "llamaindex"
     DOCSTORE_TABLE: str = "docstore"
-    LLM_MODEL: str = "gemini-2.5-flash"
+    LLM_MODEL: str = "gemini-3.6-flash"
     LLM_TEMPERATURE: float = 0.1
     LLM_MAX_TOKENS: int = 1024
     RETRIEVAL_TOP_K: int = 4
@@ -21,6 +22,10 @@ class Settings(BaseSettings):
         "If the context is insufficient, say you don't know. "
         "Be concise and accurate."
     )
+    EVAL_JUDGE_MODEL: str = "gemini-3.6-flash"
+    EVAL_TESTSET_SIZE: int = 25
+    EVAL_REPORT_DIR: str = "evals/reports"
+    EVAL_SEED_URLS: list[str] = []
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
