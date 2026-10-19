@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 # 🔄 Swapped out google_genai for openai wrappers
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_openai import ChatOpenAI
 from llama_index.core import Document
 from llama_index.core.node_parser import TokenTextSplitter
 from ragas.testset import TestsetGenerator
@@ -12,7 +12,8 @@ from app.core.config import settings
 from app.services.rag.scraping import fetch_url
 from app.services.rag.vector_store import docstore
 
-from .embeddings import FreeLLMAPIEmbeddings
+from google.genai import types
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 DATASET_PATH = Path("evals/dataset.jsonl")
 
@@ -68,11 +69,11 @@ def main() -> None:
         temperature=0.3,
     )
 
-    # 🔄 Route embedding generation through the same proxy router
-    evaluator_embeddings = FreeLLMAPIEmbeddings(
-        model="gemini-embedding-001",
-        openai_api_key=api_key,
-        openai_api_base="http://localhost:3001/v1",
+    evaluator_embeddings = GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-001", # Ensure the base model string is exact
+        api_key=settings.GEMINI_API_KEY,
+        # Map your production dimension rules here
+        output_dimensionality=settings.EMBEDDING_DIM 
     )
 
     generator = TestsetGenerator.from_langchain(

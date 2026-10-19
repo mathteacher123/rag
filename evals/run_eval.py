@@ -1,27 +1,35 @@
 import json
+import os
 import math
 from datetime import UTC, datetime
 from pathlib import Path
 
 from llama_index.core import get_response_synthesizer
 from llama_index.core.query_engine import RetrieverQueryEngine
-from llama_index.llms.google_genai import GoogleGenAI
+
 from ragas import evaluate
 from ragas.dataset_schema import EvaluationDataset, SingleTurnSample
-from ragas.embeddings import LlamaIndexEmbeddingsWrapper
-from ragas.llms import LlamaIndexLLMWrapper
+from ragas.embeddings import LangchainEmbeddingsWrapper
+from ragas.llms import LangchainLLMWrapper
+from ragas.llms import llm_factory
 from ragas.metrics import (
     AnswerCorrectness,
     AnswerRelevancy,
-    ContextPrecision,
+    context_precision,
     ContextRecall,
     Faithfulness,
 )
 
 from app.core.config import settings
 from app.services.rag.embedding import embed_model
-from app.services.rag.engine import retriever, text_qa_template
+from app.services.rag.engine import retriever, text_qa_template, query_engine
 from app.services.rag.llm import llm
+
+from langchain_openai import ChatOpenAI
+from google.genai import types
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from openai import OpenAI
+from llama_index.llms.openai_like import OpenAILike
 
 DATASET_PATH = Path("evals/dataset.jsonl")
 
@@ -32,8 +40,15 @@ def load_rows() -> list[dict]:
 
 
 def build_eval_engine() -> RetrieverQueryEngine:
+    llm2 = OpenAILike(
+        api_key=os.environ.get("FREELLMAPI_API_KEY"),
+        api_base="http://localhost:3001/v1",
+        model="auto:intelligence",
+        is_chat_model=True
+    )
+    # return query_engine
     response_synthesizer = get_response_synthesizer(
-        llm=llm,
+        llm=llm2,
         streaming=False,
         text_qa_template=text_qa_template,
     )
@@ -70,6 +85,16 @@ def collect_samples(engine: RetrieverQueryEngine) -> tuple[list, int, list]:
                 reference=row.get("ground_truth"),
             )
         )
+        """
+        # Print statements to debug and inspect your evaluation inputs
+        print("\n--- EVALUATION SAMPLE LOG ---")
+        print(f"User Input (Question): {question}")
+        print(f"Response (Answer):     {answer}")
+        print(f"Retrieved Contexts:    {contexts}")
+        print(f"Reference (Truth):     {row.get('ground_truth')}")
+        print("-" * 30)
+        """
+        break
 
     return samples, empty_context_count, error_rows
 
@@ -97,23 +122,38 @@ def main() -> None:
     engine = build_eval_engine()
     samples, empty_context_count, error_rows = collect_samples(engine)
 
-    judge_llm = GoogleGenAI(
-        api_key=settings.GEMINI_API_KEY,
-        model=settings.EVAL_JUDGE_MODEL,
-        temperature=0.0,
+    judge_llm = OpenAI(
+        api_key=os.environ.get("FREELLMAPI_API_KEY"),
+        base_url="http://localhost:3001/v1",
     )
 
+    ragas_llm = llm_factory(
+        model="auto:intelligence", 
+        provider="openai", 
+        client=judge_llm
+    )
+
+    """
+    judge_embed = GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-001", # Ensure the base model string is exact
+        api_key=settings.GEMINI_API_KEY,
+        # Map your production dimension rules here
+        output_dimensionality=settings.EMBEDDING_DIM 
+    )
+    """
+    
+    #context_precision.llm = ragas_llm
     result = evaluate(
         dataset=EvaluationDataset(samples=samples),
         metrics=[
-            ContextPrecision(),
-            ContextRecall(),
-            Faithfulness(),
-            AnswerRelevancy(),
-            AnswerCorrectness(),
+            context_precision,
+            #ContextRecall(llm=ragas_llm),
+            #Faithfulness(llm=ragas_llm),
+            #AnswerRelevancy(llm=ragas_llm),
+            #AnswerCorrectness(llm=ragas_llm),
         ],
-        llm=LlamaIndexLLMWrapper(judge_llm),
-        embeddings=LlamaIndexEmbeddingsWrapper(embed_model),
+        llm=ragas_llm,
+        # embeddings=LangchainEmbeddingsWrapper(embe),
         raise_exceptions=False,
         show_progress=True,
     )

@@ -224,4 +224,6 @@ __marimo__/
 # RAGAS evaluation reports
 evals/reports/
 
+rag_eval/
+
 z*.txt

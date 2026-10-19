@@ -1950,6 +1950,32 @@ wheels = [
 ]
 
 [[package]]
+name = "llama-index-llms-openai"
+version = "0.8.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "llama-index-core" },
+    { name = "openai" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4e/f3/32798fca5abd745bdce5bc43246eb3ce8346c2a2f905c90ad19ed51b49e9/llama_index_llms_openai-0.8.3.tar.gz", hash = "sha256:a27c174fb8670209581513cb592291508043f10b5afea5198454501921808ba6", size = 27976, upload-time = "2026-10-12T19:29:01.214Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/91/149b84210eb39e205bfbe01d85a3e76495fe0c536f4aa9167eb6d80b61a3/llama_index_llms_openai-0.8.3-py3-none-any.whl", hash = "sha256:b86deb1a9d296ca8a66cd2fa1e039e8752a529232cebaf0c7c1d0626c039a29a", size = 28995, upload-time = "2026-10-12T19:29:00.312Z" },
+]
+
+[[package]]
+name = "llama-index-llms-openai-like"
+version = "0.8.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "llama-index-core" },
+    { name = "llama-index-llms-openai" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ce/3d/d76273f6a63f3c316ac22c2993240ec95af001b0deb8a3972bc1c92330f4/llama_index_llms_openai_like-0.8.1.tar.gz", hash = "sha256:1b6f973bba97cb4ce6c71feb54c2fa6834a071ec1c4b26636dc603b818d07b0b", size = 5382, upload-time = "2026-10-01T18:03:07.079Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5f/fc/ca69dde44a1f111604200b4dcb60f8be3899bbeef0baa9002d4562207bd7/llama_index_llms_openai_like-0.8.1-py3-none-any.whl", hash = "sha256:9fb26998e492d792d7594618258d5e05de235ccff25d8dd2960156f0f3f5007e", size = 6602, upload-time = "2026-10-01T18:03:06.241Z" },
+]
+
+[[package]]
 name = "llama-index-storage-docstore-postgres"
 version = "0.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2695,20 +2721,21 @@ wheels = [
 
 [[package]]
 name = "openai"
-version = "3.3.0"
+version = "2.54.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "distro" },
-    { name = "httpx2" },
+    { name = "httpx" },
     { name = "jiter" },
     { name = "pydantic" },
     { name = "sniffio" },
+    { name = "tqdm" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/6c/670271205379061112bf5ed900b78a68e21bf11733de829772c5322f92aa/openai-3.3.0.tar.gz", hash = "sha256:28f904a9fbff15288e9dd67bc0f7020d4f576d37786383a480db02fe5d8139d3", size = 1166178, upload-time = "2026-08-18T21:17:53.419Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/50/9a/8c75e8c8a5b407a0586faeb2afac91674ff955c191ecc1d6d3b6669f6788/openai-2.54.0.tar.gz", hash = "sha256:e3e6f8bc1ba30ddf381ace1a14340eed381cb984a1a59bd0f34b5be3b5d49cfa", size = 1100285, upload-time = "2026-08-11T18:46:59.035Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/82/83/d44980712bf51dddaca090cd772b3102e75377ddac877eaa4b2cb58d886a/openai-3.3.0-py3-none-any.whl", hash = "sha256:ded6b2112e6d299c7a2573ff6f165dc92fb64ceaa4d7daa42345f091157bd373", size = 1690265, upload-time = "2026-08-18T21:17:51.351Z" },
+    { url = "https://files.pythonhosted.org/packages/64/a8/bb76c7356de8ad57f59d5ff993d434df0607f07f08bcc9c9a5c275e399c0/openai-2.54.0-py3-none-any.whl", hash = "sha256:89089789197ccdb87f173a03145ed1598d00795220c93e96cf712b1cbf5e5f2b", size = 1660351, upload-time = "2026-08-11T18:46:56.684Z" },
 ]
 
 [[package]]
@@ -4389,6 +4416,8 @@ dependencies = [
     { name = "llama-index-core" },
     { name = "llama-index-embeddings-google-genai" },
     { name = "llama-index-llms-google-genai" },
+    { name = "llama-index-llms-openai" },
+    { name = "llama-index-llms-openai-like" },
     { name = "llama-index-storage-docstore-postgres" },
     { name = "llama-index-vector-stores-postgres" },
     { name = "psycopg2-binary" },
@@ -4421,6 +4450,8 @@ requires-dist = [
     { name = "llama-index-core" },
     { name = "llama-index-embeddings-google-genai" },
     { name = "llama-index-llms-google-genai" },
+    { name = "llama-index-llms-openai", specifier = ">=0.8.3" },
+    { name = "llama-index-llms-openai-like", specifier = ">=0.8.1" },
     { name = "llama-index-storage-docstore-postgres" },
     { name = "llama-index-vector-stores-postgres" },
     { name = "psycopg2-binary" },

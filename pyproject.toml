@@ -26,6 +26,8 @@ dependencies = [
     "google-genai>=2.27.0",
     "langchain-openai>=1.7.2",
     "httpx>=0.28.1",
+    "llama-index-llms-openai>=0.8.3",
+    "llama-index-llms-openai-like>=0.8.1",
 ]
 
 [project.optional-dependencies]
