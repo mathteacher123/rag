@@ -25,7 +25,10 @@ class Settings(BaseSettings):
     EVAL_JUDGE_MODEL: str = "gemini-3.6-flash"
     EVAL_TESTSET_SIZE: int = 25
     EVAL_REPORT_DIR: str = "evals/reports"
-    EVAL_SEED_URLS: list[str] = []
+    EVAL_SEED_URLS: list[str] = [
+        "https://example.com/",
+        "https://grotesque-moccasin-jlapcb5i.edgeone.dev/"
+    ]
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
