@@ -7,6 +7,8 @@ from llama_index.core import Document
 from llama_index.core.node_parser import MarkdownNodeParser, SentenceSplitter
 from ragas.testset import TestsetGenerator
 from ragas.testset.transforms.default import default_transforms_for_prechunked
+from ragas.llms import LangchainLLMWrapper, LlamaIndexLLMWrapper
+from ragas.embeddings.base import LlamaIndexEmbeddingsWrapper
 
 from app.core.config import settings
 from app.services.rag.scraping import fetch_url
@@ -73,9 +75,23 @@ def main() -> None:
             "No documents available. Ingest URLs or set EVAL_SEED_URLS."
         )
 
+    print(f"Total documents loaded for generation: {len(raw_documents)}")
+    """
+    for d in raw_documents:
+        print(f"Text=: {d.text}")
+        print(f"metadata=: {d.metadata}")
+    """
     # Get your transformed chunks instantly
     chunked_documents = transform_documents(raw_documents, chunk_size=1024, chunk_overlap=100)
     
+    print("------------------------")
+    print(f"Total chunked_documents loaded for generation: {len(chunked_documents)}")
+    """
+    for d in chunked_documents:
+        print(f"Text=: {d.text}")
+        print(f"metadata=: {d.metadata}")
+    return
+    """
     langchain_docs = [
         LangChainDocument(
             page_content=node.text,
@@ -83,7 +99,7 @@ def main() -> None:
         )
         for node in chunked_documents
     ]
-    """
+    
     # 🔄 Check for the FreeLLMAPI Unified Token instead of Gemini key
     api_key = os.environ.get("FREELLMAPI_API_KEY")
     if not api_key:
@@ -97,7 +113,7 @@ def main() -> None:
         openai_api_base="http://localhost:3001/v1",
         temperature=0.3,
     )
-
+    """
     evaluator_embeddings = GoogleGenerativeAIEmbeddings(
         model="models/gemini-embedding-001", # Ensure the base model string is exact
         api_key=settings.GEMINI_API_KEY,
@@ -105,12 +121,13 @@ def main() -> None:
         output_dimensionality=settings.EMBEDDING_DIM 
     )
     """
-    evaluator_llm = llm
+    #evaluator_llm = llm
     evaluator_embeddings = embed_model
 
-    generator = TestsetGenerator.from_llama_index(
-        llm=evaluator_llm,
-        embedding_model=evaluator_embeddings,
+    generator = TestsetGenerator(
+        #llm=LlamaIndexLLMWrapper(evaluator_llm),
+        llm=LangchainLLMWrapper(evaluator_llm),
+        embedding_model=LlamaIndexEmbeddingsWrapper(evaluator_embeddings),
     )
 
     # Generate testset natively using our robust, pre-split chunks

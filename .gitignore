@@ -227,3 +227,5 @@ evals/reports/
 rag_eval/
 
 z*.txt
+z*.sh
+./api.sh
